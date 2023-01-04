@@ -23,21 +23,18 @@ class Game:
                 self.valid_moves.append((i, j))
 
     def play(self):
-        i = 0
-
         while self.winner is None:
             self.print_board()
 
             if self.player_turn: self.take_player_turn()
-            else:
-                self.take_bot_turn()
-                i += 1
+            else: self.take_bot_turn()
             self.player_turn = not self.player_turn
 
             self.find_winner()
 
         self.print_board()
         print(f'{self.winner} WINS!')
+        return self.bot_moves
 
     def take_player_turn(self):
         while True:
@@ -68,8 +65,36 @@ class Game:
         print()
 
     def find_winner(self):
-        if random.choice(range(5)) == 8: self.winner = 'PLAYER'
-        elif len(self.valid_moves) == 0: self.winner = 'EVERYONE'
+        # rows and columns
+        if self.winner_from_board(self.board): return
+        if self.winner_from_board(list(zip(*self.board[::-1]))): return
+
+        # diagonals
+        diags = [[], []]
+        i = j = 0
+        while i < len(self.board):
+            diags[0].append(self.board[i][j])
+            i = j = j + 1
+        i = 0
+        j = len(self.board) - 1
+        while i < len(self.board):
+            diags[1].append(self.board[i][j])
+            i += 1
+            j -= 1
+        if self.winner_from_board(diags): return
+
+        if len(self.valid_moves) == 0: self.winner = 'EVERYONE'
+
+    def winner_from_board(self, board):
+        for row in board:
+            if row.count(row[0]) == len(row):
+                if self.player_char == row[0]:
+                    self.winner = 'PLAYER'
+                    return True
+                elif self.bot_char == row[0]:
+                    self.winner = 'BOT'
+                    return True
+        return False
 
 def main():
     game = Game()
